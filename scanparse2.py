@@ -5,9 +5,9 @@
 import csv
 import datetime
 
-MY_FILE = "amy.csv" #TODO: change to ~os/path/to/csvfile.csv
+MY_FILE = "amy.csv" # TODO: change to ~os/path/to/csvfile.csv
 
-def parse(raw_file, delimiter):	#TODO: This will not append the last shift worked. Fix that
+def parse(raw_file, delimiter):	
 	"""Parses a CSV file to two dictionaries (regular and OT hours) of 'Date: Hours Worked' with both Date
 	and Hours Worked as datetime objects."""
 	regular_hours = {}
@@ -18,17 +18,17 @@ def parse(raw_file, delimiter):	#TODO: This will not append the last shift worke
 	fields = csv_data.next()
 	time = None
 
-	for row in csv_data:
+	for row in csv_data: # TODO: This will not append the last shift worked. Fix that
 
 		next_time = datetime.datetime.strptime(row[1], "%m/%d/%Y %H:%M")
 
 		if time == None:
 			time = next_time
 		time_difference = next_time - time
-		#Convert the time difference to a float-type of hours
+
 		time_difference = float(time_difference.total_seconds())/3600
-		if time_difference > 12.5:		#Length of shift we're willing to accept.
-			#hours() returns a tuple.. pretty pro
+		
+		if time_difference > 12.5:		
 			date, shift_hours, ot_hours = hours(shift)
 			regular_hours[date] = shift_hours
 			overtime_hours[date] = ot_hours
@@ -43,20 +43,19 @@ def parse(raw_file, delimiter):	#TODO: This will not append the last shift worke
 
 def hours(shift):
 	"""Parses through an employee shift and returns the date, regular hours worked, and OT hours."""
-	#Since lists preserve order, the first dict in the shift list is the time the employee clocks in, and
-	#the last has when they clockout.
+	# Since lists preserve order, the first dict in the shift list is the time the employee clocks in, and
+	# the last has when they clockout.
 	date = datetime.datetime.strptime(shift[0]['Date'], "%m/%d/%Y")
 	clockin = datetime.datetime.strptime(shift[0]['Scan Time'], "%m/%d/%Y %H:%M")
 	clockout = datetime.datetime.strptime(shift[-1]['Scan Time'], "%m/%d/%Y %H:%M")
 	lunchin = datetime.timedelta()
 	lunchout = datetime.timedelta()
 	ot_hours = datetime.timedelta()
-	#Calculate lunch time to subtract it from their shift.
 
 	for i in shift:
 		if i['Scan Type'] == 'Lunch-In/Lunch-Out Swipe':
 			lunchin = datetime.datetime.strptime(i['Scan Time'], "%m/%d/%Y %H:%M")
-			#Break the loop so 'lunchin' is the first lunch swipe found.
+			# Break the loop so 'lunchin' is the first lunch swipe found.
 			break
 	for i in shift:
 		if i['Scan Type'] == 'Lunch-In/Lunch-Out Swipe':
