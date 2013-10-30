@@ -18,7 +18,7 @@ def parse(raw_file, delimiter):
 	fields = csv_data.next()
 	time = None
 
-	for row in csv_data: # TODO: This will not append the last shift worked. Fix that
+	for row in csv_data: # FIX: This will not append the last shift worked. Fix that
 
 		next_time = datetime.datetime.strptime(row[1], "%m/%d/%Y %H:%M")
 
@@ -64,6 +64,7 @@ def hours(shift):
 	lunch_time = lunchout - lunchin
 	shift_hours = clockout - clockin - lunch_time
 
+	# 8 hours is a regular shift before overtime pay begins.
 	if shift_hours > datetime.timedelta(hours=8):
 		ot_hours = shift_hours - datetime.timedelta(hours=8)
 
@@ -75,14 +76,14 @@ def desired_hours(hours_dict, start_date, end_date):
 	"""Takes either the regular_hours or overtime_hours dictionary and sums the hours the
 	employee worked between a start date and end date."""
 	total = []
-	for day, hours in hours_dict.iteritems():
-		if day >= start_date and day <= end_date:
-			total.append(hours)
+	for date, hours_worked in hours_dict.iteritems():
+		if date >= start_date and date <= end_date:
+			total.append(hours_worked)
 
 	return sum(total, datetime.timedelta()).total_seconds()/3600
 
 def main():
-	regular_data, ot_data = parse(MY_FILE, ",")
+	regular_hours, overtime_hours = parse(MY_FILE, ",")
 	try:
 		start_date = datetime.datetime.strptime(raw_input('Enter a start date (m/d/yyyy): '), "%m/%d/%Y")
 	except ValueError:
@@ -94,11 +95,11 @@ def main():
 		print "Not a valid date."
 		return main()
 
-	cost = desired_hours(regular_data, start_date, end_date) * 8.00
-	ot_cost = desired_hours(ot_data, start_date, end_date) * 12.00
+	cost = desired_hours(regular_hours, start_date, end_date) * 8.00
+	ot_cost = desired_hours(overtime_hours, start_date, end_date) * 12.00
 
-	print "Regular hours: %f" % desired_hours(regular_data, start_date, end_date)
-	print "Overtime hours: %f" % desired_hours(ot_data, start_date, end_date)
+	print "Regular hours: %f" % desired_hours(regular_hours, start_date, end_date)
+	print "Overtime hours: %f" % desired_hours(overtime_hours, start_date, end_date)
 	print 'Pay: $%f' % (cost + ot_cost)
 
 if __name__ == "__main__":
